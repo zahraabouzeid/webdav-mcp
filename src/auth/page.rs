@@ -104,9 +104,6 @@ pub fn connect(connecting: &Connecting, error: Option<&str>) -> Response {
          <input id=\"password\" name=\"password\" type=\"password\" autocomplete=\"off\">\
          <p class=\"help\">Create one in the security settings of your file service. It stays \
          encrypted on this server.</p>\
-         <label for=\"notes\">Notes for the AI (optional)</label>\
-         <textarea id=\"notes\" name=\"notes\" rows=\"3\" \
-         placeholder=\"Which folders hold what\">{notes}</textarea>\
          <button class=\"main\" name=\"action\" value=\"allow\">Connect</button>\
          <button name=\"action\" value=\"deny\" formnovalidate>Cancel</button>\
          </form>",
@@ -114,7 +111,6 @@ pub fn connect(connecting: &Connecting, error: Option<&str>) -> Response {
         host = escape(connecting.app_host),
         address = typed(&connecting.login.address),
         user = typed(&connecting.login.user),
-        notes = typed(&connecting.login.notes),
     );
     let status = match error {
         Some(_) => StatusCode::BAD_REQUEST,

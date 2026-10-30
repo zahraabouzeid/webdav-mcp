@@ -152,7 +152,6 @@ impl Server {
         app: &str,
         address: &str,
         password: &str,
-        notes: &str,
     ) -> (StatusCode, axum::http::HeaderMap, String) {
         let challenge = challenge_of(VERIFIER);
         self.call(form(
@@ -166,16 +165,15 @@ impl Server {
                 ("address", address),
                 ("user", USER),
                 ("password", password),
-                ("notes", notes),
                 ("action", "allow"),
             ],
         ))
         .await
     }
 
-    async fn connect(&self, notes: &str) -> String {
+    async fn connect(&self) -> String {
         let app = self.register().await;
-        let (status, headers, page) = self.sign_in(&app, &self.address, PASSWORD, notes).await;
+        let (status, headers, page) = self.sign_in(&app, &self.address, PASSWORD).await;
         assert_eq!(status, StatusCode::SEE_OTHER, "{page}");
         let back = Url::parse(headers[header::LOCATION].to_str().expect("text")).expect("url");
         let pairs: HashMap<_, _> = back.query_pairs().into_owned().collect();
@@ -258,12 +256,7 @@ async fn the_sign_in_page_asks_for_the_login_and_fits_a_phone() {
     let (status, _, page) = server.call(request).await;
     assert_eq!(status, StatusCode::OK);
     assert!(page.contains("width=device-width"));
-    for field in [
-        "name=\"address\"",
-        "name=\"user\"",
-        "name=\"password\"",
-        "name=\"notes\"",
-    ] {
+    for field in ["name=\"address\"", "name=\"user\"", "name=\"password\""] {
         assert!(page.contains(field), "{field}");
     }
 }
@@ -273,13 +266,13 @@ async fn a_wrong_password_stays_on_the_page_and_is_not_sent_back() {
     let server = start("wrong").await;
     let app = server.register().await;
     let address = server.address.clone();
-    let (status, _, page) = server.sign_in(&app, &address, "a-wrong-password", "").await;
+    let (status, _, page) = server.sign_in(&app, &address, "a-wrong-password").await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert!(page.contains("refused this login"), "{page}");
     assert!(!page.contains("a-wrong-password"));
     assert!(page.contains(USER), "the username stays filled in");
 
-    let (status, _, page) = server.sign_in(&app, &address, "", "").await;
+    let (status, _, page) = server.sign_in(&app, &address, "").await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert!(page.contains("Enter the address"), "{page}");
 }
@@ -287,7 +280,7 @@ async fn a_wrong_password_stays_on_the_page_and_is_not_sent_back() {
 #[tokio::test]
 async fn a_connected_app_lists_and_reads_files() {
     let server = start("read").await;
-    let token = server.connect("").await;
+    let token = server.connect().await;
 
     let listed = server
         .tool(&token, "list_files", json!({"path": "Uni"}))
@@ -323,7 +316,7 @@ async fn a_connected_app_lists_and_reads_files() {
 #[tokio::test]
 async fn a_picture_comes_back_as_a_picture() {
     let server = start("picture").await;
-    let token = server.connect("").await;
+    let token = server.connect().await;
     let read = server
         .tool(&token, "read_file", json!({"path": "Uni/picture.png"}))
         .await;
@@ -335,7 +328,7 @@ async fn a_picture_comes_back_as_a_picture() {
 #[tokio::test]
 async fn bad_paths_and_redirects_are_errors() {
     let server = start("paths").await;
-    let token = server.connect("").await;
+    let token = server.connect().await;
     for (path, expected) in [
         ("Uni/../../other", "must not contain"),
         ("Uni/missing.md", "no such file"),
@@ -351,33 +344,9 @@ async fn bad_paths_and_redirects_are_errors() {
 }
 
 #[tokio::test]
-async fn notes_reach_the_ai_as_instructions_only_when_there_are_any() {
-    let server = start("notes").await;
-    let token = server.connect("Homework is in Uni/Sheets").await;
-    let params = json!({
-        "protocolVersion": "2025-06-18",
-        "capabilities": {},
-        "clientInfo": {"name": "test", "version": "1"},
-    });
-    let (_, answer) = server.mcp(Some(&token), "initialize", params.clone()).await;
-    let instructions = answer["result"]["instructions"]
-        .as_str()
-        .expect("instructions");
-    assert!(
-        instructions.contains("Homework is in Uni/Sheets"),
-        "{instructions}"
-    );
-
-    let plain = start("no-notes").await;
-    let token = plain.connect("").await;
-    let (_, answer) = plain.mcp(Some(&token), "initialize", params).await;
-    assert!(answer["result"]["instructions"].is_null(), "{answer}");
-}
-
-#[tokio::test]
 async fn the_login_is_not_stored_readable() {
     let server = start("stored").await;
-    server.connect("").await;
+    server.connect().await;
     let mut stored = Vec::new();
     for file in fs::read_dir(&server.folder).expect("a folder") {
         stored.extend(fs::read(file.expect("a file").path()).expect("content"));
@@ -388,7 +357,7 @@ async fn the_login_is_not_stored_readable() {
 #[tokio::test]
 async fn the_tools_are_read_only() {
     let server = start("tools").await;
-    let token = server.connect("").await;
+    let token = server.connect().await;
     let (_, listed) = server.mcp(Some(&token), "tools/list", json!({})).await;
     let tools = listed["result"]["tools"].as_array().expect("tools");
     assert_eq!(tools.len(), 2);
