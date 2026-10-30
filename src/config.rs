@@ -34,7 +34,7 @@ impl Settings {
         })
     }
 
-    /// The address AI apps reach this server under.
+    /// The address LLM clients reach this server under.
     pub fn base_url(&self) -> String {
         if self.public_host.is_empty() {
             format!("http://localhost:{}", self.port)

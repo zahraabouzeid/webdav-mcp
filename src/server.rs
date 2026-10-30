@@ -102,7 +102,7 @@ impl FilesServer {
 
     #[tool(
         description = "List the files and folders in one folder of the connected file service.\n\n\
-            If the service refuses the login, tell the user to connect it again in their AI app, \
+            If the service refuses the login, tell the user to connect it again in their LLM client, \
             and never ask for a password in the chat.",
         annotations(read_only_hint = true, open_world_hint = true)
     )]
