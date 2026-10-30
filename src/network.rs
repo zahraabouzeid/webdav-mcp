@@ -176,7 +176,6 @@ impl Network {
             root: self.root_of(&address, &user)?.to_string(),
             user,
             password,
-            notes: Some(field(&form.notes)).filter(|notes| !notes.is_empty()),
         };
         self.client(&login)?.list("").await?;
         Ok(login)
@@ -267,7 +266,6 @@ mod tests {
             address: Some("cloud.example".into()),
             user: Some(" ".into()),
             password: Some("app-password".into()),
-            notes: None,
         };
         let Err(error) = Network::new(Addresses::PublicOnly).check(&form).await else {
             panic!("a login without a username was accepted");

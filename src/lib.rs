@@ -85,7 +85,7 @@ impl ConnectedMcp {
             return Ok(service.clone());
         }
         let login = Login::from_secret(&self.oauth.secret_of(connection)?)?;
-        let server = FilesServer::new(self.network.client(&login)?, login.notes);
+        let server = FilesServer::new(self.network.client(&login)?);
         let service = StreamableHttpService::new(
             move || Ok(server.clone()),
             Arc::new(LocalSessionManager::default()),

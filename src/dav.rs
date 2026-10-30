@@ -25,7 +25,6 @@ pub struct LoginForm {
     pub address: Option<String>,
     pub user: Option<String>,
     pub password: Option<String>,
-    pub notes: Option<String>,
 }
 
 /// What is stored, encrypted, for one connection. Not `Debug`, like the form.
@@ -34,7 +33,6 @@ pub struct Login {
     pub root: String,
     pub user: String,
     pub password: String,
-    pub notes: Option<String>,
 }
 
 impl Login {
@@ -205,11 +203,9 @@ mod tests {
             root: "https://cloud.example/dav/".into(),
             user: "someone".into(),
             password: "app-password".into(),
-            notes: Some("Notes are in Uni".into()),
         };
         let stored = Login::from_secret(&login.to_secret()).expect("a login");
         assert_eq!(stored.password, "app-password");
-        assert_eq!(stored.notes.as_deref(), Some("Notes are in Uni"));
         assert!(Login::from_secret("damaged").is_err());
     }
 }
