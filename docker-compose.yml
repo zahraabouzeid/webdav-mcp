@@ -1,0 +1,27 @@
+services:
+  webdav-mcp:
+    image: ghcr.io/zahraabouzeid/webdav-mcp:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BEHIND_PROXY: "true"
+    expose:
+      - "8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - data:/data
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
+
+volumes:
+  data:
