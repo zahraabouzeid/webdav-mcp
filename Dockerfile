@@ -3,6 +3,7 @@ WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY src src
 COPY migrations migrations
+COPY templates templates
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/src/target \
     cargo build --release --locked \

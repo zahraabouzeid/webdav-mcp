@@ -39,7 +39,7 @@ const MAX_REDIRECTS: usize = 5;
 const MAX_URI_CHARS: usize = 500;
 const MAX_APP_NAME_CHARS: usize = 100;
 const NO_SUCH_APP: &str = "The app that sent you here is not known to this server. \
-    Add the connector again in your AI app.";
+    Add the connector again in the AI app.";
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Refusal {
@@ -603,7 +603,7 @@ struct Answer {
 /// Sends the browser back to the app that asked, with `pairs` added.
 fn back_to_app(web: &Web, redirect: &str, state: Option<&str>, pairs: &[(&str, &str)]) -> Response {
     let Ok(mut back) = Url::parse(redirect) else {
-        return page::problem(NO_SUCH_APP);
+        return page::problem(&host_of(&web.base), NO_SUCH_APP);
     };
     {
         let mut query = back.query_pairs_mut();
@@ -627,7 +627,7 @@ fn host_of(redirect: &str) -> String {
 
 async fn ask(State(web): State<Web>, Query(asking): Query<Asking>) -> Response {
     let Ok(app) = web.oauth.app_name(&asking.client_id, &asking.redirect_uri) else {
-        return page::problem(NO_SUCH_APP);
+        return page::problem(&host_of(&web.base), NO_SUCH_APP);
     };
     let state = asking.state.as_deref();
     let challenge = asking.code_challenge.as_deref().unwrap_or_default();
@@ -641,6 +641,7 @@ async fn ask(State(web): State<Web>, Query(asking): Query<Asking>) -> Response {
     }
     page::connect(
         &Connecting {
+            server: &host_of(&web.base),
             app: &app,
             app_host: &host_of(&asking.redirect_uri),
             client_id: &asking.client_id,
@@ -656,7 +657,7 @@ async fn ask(State(web): State<Web>, Query(asking): Query<Asking>) -> Response {
 
 async fn answer(State(web): State<Web>, Form(answer): Form<Answer>) -> Response {
     let Ok(app) = web.oauth.app_name(&answer.client_id, &answer.redirect_uri) else {
-        return page::problem(NO_SUCH_APP);
+        return page::problem(&host_of(&web.base), NO_SUCH_APP);
     };
     let state = answer.state.as_deref();
     if answer.action != "allow" {
@@ -675,6 +676,7 @@ async fn answer(State(web): State<Web>, Form(answer): Form<Answer>) -> Response 
         Err(error) => {
             return page::connect(
                 &Connecting {
+                    server: &host_of(&web.base),
                     app: &app,
                     app_host: &host_of(&answer.redirect_uri),
                     client_id: &answer.client_id,

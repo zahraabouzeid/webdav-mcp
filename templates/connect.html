@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Connect {{ connecting.app }}{% endblock %}
+
+{% block content %}
+<form class="stack" method="post" action="/oauth/authorize">
+  <div class="intro">
+    <h1>Connect {{ connecting.app }}</h1>
+    <p class="muted">{{ connecting.app }} ({{ connecting.app_host }}) requests read access to files.</p>
+  </div>
+
+  {% if let Some(error) = error %}
+  <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <input type="hidden" name="client_id" value="{{ connecting.client_id }}">
+  <input type="hidden" name="redirect_uri" value="{{ connecting.redirect_uri }}">
+  <input type="hidden" name="code_challenge" value="{{ connecting.code_challenge }}">
+  <input type="hidden" name="code_challenge_method" value="{{ connecting.code_challenge_method }}">
+  {% if let Some(state) = connecting.state %}
+  <input type="hidden" name="state" value="{{ state }}">
+  {% endif %}
+
+  <label class="field">
+    <span>Server address</span>
+    <input name="address" value="{{ connecting.login.address.as_deref().unwrap_or_default() }}" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="cloud.example.org">
+  </label>
+  <label class="field">
+    <span>Username</span>
+    <input name="user" value="{{ connecting.login.user.as_deref().unwrap_or_default() }}" autocomplete="off" autocapitalize="none" spellcheck="false">
+  </label>
+  <label class="field">
+    <span>App password</span>
+    <input name="password" type="password" autocomplete="off">
+  </label>
+
+  <p class="help">Nextcloud, ownCloud and Sciebo need only the host name, other services the full WebDAV address. App passwords are created in the service's security settings. Stored encrypted. Access is read-only.</p>
+
+  <div class="buttons">
+    <button class="primary" name="action" value="allow">Connect</button>
+    <button name="action" value="deny">Cancel</button>
+  </div>
+</form>
+{% endblock %}
