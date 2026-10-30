@@ -1,4 +1,4 @@
-//! The pages where someone connects an AI app to their files. The HTML is in
+//! The pages where someone connects an LLM client to their files. The HTML is in
 //! `templates/`, which also escapes everything that is filled in.
 
 use askama::Template;

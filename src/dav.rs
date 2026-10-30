@@ -15,7 +15,7 @@ const PROPFIND_BODY: &str = r#"<?xml version="1.0"?>
 </d:prop></d:propfind>"#;
 const MAX_LISTING_BYTES: usize = 20 * 1024 * 1024;
 const REFUSED: &str = "The file service refused this login. Check the username and the app \
-    password, or connect again in the AI app if it has changed.";
+    password, or connect again in the LLM client if it has changed.";
 const NO_WEBDAV: &str = "No WebDAV file service answered at this address. Check the address.";
 
 /// What someone typed on the sign-in page. Not `Debug`, so the password cannot

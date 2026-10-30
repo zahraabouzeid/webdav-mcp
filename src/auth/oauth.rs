@@ -1,4 +1,4 @@
-//! Sign-in for AI apps: OAuth 2.1 with PKCE. Each connection holds its own
+//! Sign-in for LLM clients: OAuth 2.1 with PKCE. Each connection holds its own
 //! encrypted secret, so no accounts are needed. Codes and tokens are stored as
 //! fingerprints, so the database alone connects no app.
 
@@ -39,7 +39,7 @@ const MAX_REDIRECTS: usize = 5;
 const MAX_URI_CHARS: usize = 500;
 const MAX_APP_NAME_CHARS: usize = 100;
 const NO_SUCH_APP: &str = "The app that sent you here is not known to this server. \
-    Add the connector again in the AI app.";
+    Add the connector again in the LLM client.";
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Refusal {
